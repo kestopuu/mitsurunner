@@ -50,10 +50,12 @@ substitutions:
   topic_test2:                        'ln25/sensor/temperature/out/heatexc_high'
   topic_delta:                        'ln25/sensor/temperature/out/delta'
   topic_current:                      'ln25/sensor/current'
+  topic_rssi:                         'ln25/sensor/wifi/rssi'
+  topic_outdoor_errors:               'ln25/sensor/error/out_inlet_errors'
+  topic_exchanger_errors:             'ln25/sensor/error/out_heatexc_errors'
 #  topic_dht_temp:                     'ln25/sensor/temperature/out/temp'
 #  topic_dht_temp:                     'ln25/sensor/temperature/out/temp'
 #  topic_dht_humi:                     'ln25/sensor/temperature/out/humidity'
-
 
 # MQTT topics. Notice that these are inside both single and double quotes:
   topic_outdoor_raw:                  '"ln25/sensor/temperature/out/inlet"'
@@ -71,4 +73,4 @@ substitutions:
 
   dallas_pin:                         'D7'
   relay_pin:                          'D1'
-  
+

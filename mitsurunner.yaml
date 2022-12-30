@@ -23,7 +23,7 @@
 <<: !include personal/pii.yaml
 <<: !include platform.yaml
 
-# initialize and define mitsurunner
+# initialize and define Mitsurunner
 esphome:
   name: mitsurunner
   platform: $platform_type
@@ -59,9 +59,18 @@ globals:
   - id: G_outdoor_temp_filtered
     type: float
     initial_value: '0.0'
+  - id: outdoor_temp_errors
+    type: int
+    restore_value: no
+    initial_value: '0'
+  - id: heat_exchanger_temp_errors
+    type: int
+    restore_value: no
+    initial_value: '0'
   - id: G_current_filtered
     type: float
     initial_value: '0.0'
+
 
 # global constants
   - id: G_TOPIC_STATE
@@ -98,8 +107,8 @@ globals:
     type: const char*
     initial_value: $topic_delta_threshold
 
-# dallas DS28B20 sensor
-# device measures temperature in 10 seconds interval
+
+# Temperature sensor (Dallas DS18B20) and its update/measurement interval
 dallas:
   - pin: $dallas_pin
     update_interval: 5s
@@ -114,24 +123,32 @@ switch:
     name: "Defrost prevention control"
     id: gpio_relay
 
-# Dallas DS18B20 temperature sensor details. 
-# you need to check IDs of temperature sensors by starting this SW and checking those from logs printing to terminal. 
-# After checked, copy IDs to platform.yaml file and heat another sensor. Check which sensor it were and use it for the appropriate topic
+# Temperature sensor (Dallas DS18B20) details. 
+# You need to check temperature sensors IDs by starting this software and checking IDs from log printing to terminal. 
+# Copy IDs from terminal log to platform.yaml file and heat one sensor. Then check which sensor it was and use it for the corresponding topic
 sensor:
   - platform: dallas
-    address: $dallas_address_heat_exchanger_temp # Please remember to define this on platform.yaml
+    address: $dallas_address_heat_exchanger_temp # Remember to define this on platform.yaml
     name: "outdoor unit heat exchanger temperature"
     id: heat_exchanger_temp
     accuracy_decimals: 1
     state_topic: $topic_heatexchanger
-    filters:    
+    filters:
       - filter_out: nan
+      - filter_out: 85.0
       - exponential_moving_average:
+          # Be careful when tweaking this filter, too small alpha may delay defrosting too much
           alpha: 0.05
           send_every: 6 #30s
-  
+    on_raw_value:
+      then:
+        lambda: !lambda |-
+            if ((isnan(x)) || (x > 84.0)) {
+                if ((id(heat_exchanger_temp_errors) += 1) == 1000) id(heat_exchanger_temp_errors) = 10;
+            }
+
   - platform: dallas
-    address: $dallas_address_outdoor_temp # Please remember to define this on platform.yaml
+    address: $dallas_address_outdoor_temp # Remember to define this on platform.yaml
     name: "outdoor temperature"
     id: outdoor_temp
     accuracy_decimals: 1
@@ -145,21 +162,23 @@ sensor:
     on_raw_value:
       then:
         lambda: !lambda |-
-            static const float lambda = 0.1;
-            static bool first_time = 1;
-            if(first_time) {
-                if (!isnan(x)) {
-                  id(G_outdoor_temp_filtered) = x;
-                  first_time = 0;
-                }
-            } 
-            else if (!isnan(x)) {
-                id(G_outdoor_temp_filtered) = id(G_outdoor_temp_filtered) * (1.0 - lambda) + x * lambda;
+            // Calculate exponential moving average for outdoor temperature
+            // Alpha is adjustable, similar to one in the built-in exponential_moving_average filter
+            static const float alpha = 0.1;
+            static bool first_time = true;
+
+            if ((isnan(x)) || (x > 84.0))  { //Check if non-valid Dallas value
+                if ((id(outdoor_temp_errors) += 1) == 1000) id(outdoor_temp_errors) = 10;
+            }
+            // Valid Dallas value received, do not use filter until first value received
+            else if(first_time) {
+                id(G_outdoor_temp_filtered) = x;
+                first_time = false;
+            }
+            else {
+                id(G_outdoor_temp_filtered) = id(G_outdoor_temp_filtered) * (1.0 - alpha) + x * alpha;
             }
 
-
-# additional sensors can be added by defining new sensors - uncomment example below:
-# e.g. for having another sensors to measure outdoor temperature from different place. (not used by logic)
   - platform: dallas
     address: $dallas_address_test
     name: "test_temperature"
@@ -183,6 +202,36 @@ sensor:
       - exponential_moving_average:
           alpha: 0.05
           send_every: 6
+
+
+ # RSSI monitoring, reports the WiFi signal strength in dB
+  - platform: wifi_signal
+    name: "WiFi Signal dB"
+    id: wifi_signal_db
+    accuracy_decimals: 0
+    state_topic: $topic_rssi
+    update_interval: 15s
+    filters:
+    - sliding_window_moving_average:
+        window_size: 8     #2 min
+        send_every: 8      #2 min
+
+# Error counters for Dallas sensor errors
+  - platform: template
+    id: report_outdoor_errors
+    name: "outdoor_errors"
+    state_topic: $topic_outdoor_errors
+    update_interval: 120s
+    lambda: |-
+        return id(outdoor_temp_errors);
+
+  - platform: template
+    id: report_heat_exchanger_errors
+    name: "heat_exchanger_errors"
+    state_topic: $topic_exchanger_errors
+    update_interval: 120s
+    lambda: |-
+        return id(heat_exchanger_temp_errors);
 
 
   - platform: ct_clamp
@@ -245,6 +294,9 @@ sensor:
   #             float dew_point = id(dht_temp).state - ((100.0 - x)/5.0);
   #             id(mqtt_client).publish("ln25/sensor/temperature/out/dew_point", to_string(dew_point));
   #   update_interval: 10s
+
+
+# ----------------------- Code/script section begins ----------------------- #
 
 
 # State machine to trigger defrosting when needed
@@ -353,8 +405,7 @@ sensor:
                 // or the upper temperature limit is exceeded, start defrosting directly.
                 else if (id(G_max_heating_time_passed)) {
                     id(enter_StartDefrosting).execute();
-                } 
-
+                }
                 break;
 
             // Should never end up in here
@@ -372,10 +423,11 @@ script:
     # Delay state machine start so that system can connect wifi & MQTT before starting logics
     - delay: !lambda "return INITIALIZE_DELAY * 1000;"
     - script.execute: enter_Reset
-    
-    
-# -------- State machine state entrance scripts --------
-  
+
+
+# ------------------ State machine state entrance scripts ------------------ #
+
+
 ############## ST_RESET ###############
   - id: enter_Reset
     mode: single
@@ -457,7 +509,7 @@ script:
         id(G_state_timer) = (MIN_HEATING_TIME - RELAY_OFF_TIME) * 60000;
     - script.execute: start_state_timer
 
-# ------------------------------------------------------
+# -------------------------------------------------------------------------- #
 
 # Script for timer used for state machine timeouts etc.
   - id: start_state_timer
@@ -479,7 +531,7 @@ script:
         id(report_timer_status).execute();
         
         id(G_state_time_passed) = true;
-        
+
 ############### REPORT_TIMER_STATUS ###############
   - id: report_timer_status
     then:
@@ -507,13 +559,13 @@ script:
                 break;
             default:
                 break;
-        }   
+        }
         
         if ( send_message ) {
             id(mqtt_client).publish(id_timer_topic, id(G_timer_action));
         }
 
-    
+
 # Script for forced defrosting
 # Forced defrosting prevents oil to accumulate to some places in device, 
 # which may cause compressor not to get oiled when running.
