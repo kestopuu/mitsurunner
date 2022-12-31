@@ -9,6 +9,6 @@ I have a first generation MSZ-LN25 heat pump that has serious "hullunkierto" (fr
 - Current clamp sensor monitoring input power of the heat pump
 - DHT11 sensor (commented out in the code, not used currenlty but left for reference)
 - Variable temperature delta threshold to srart defrosting:
-  - if (input) power < 900W, delta = 4
-  - if 900W <= power < 1400W, delta = 5
-  - if power >= 1400W, delta = 6
+  - if (input) power < 900W, threshold = 4
+  - if 900W <= power < 1400W, threshold = 5
+  - if power >= 1400W, threshold = 6
