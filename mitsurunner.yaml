@@ -234,7 +234,7 @@ sensor:
     lambda: |-
         return id(heat_exchanger_temp_errors);
 
-
+# Clamp current sensor
   - platform: ct_clamp
     sensor: adc_sensor
     name: "Measured Current"
@@ -267,6 +267,13 @@ sensor:
   - platform: adc
     pin: A0
     id: adc_sensor
+
+# Uptime
+  - platform: uptime
+    id: uptime_counter
+    name: "uptime"
+    state_topic: $topic_uptime
+    update_interval: 60s
 
   # - platform: dht
   #   pin: D4

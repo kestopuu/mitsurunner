@@ -54,6 +54,7 @@ substitutions:
   topic_rssi:                         'ln25/sensor/wifi/rssi'
   topic_outdoor_errors:               'ln25/sensor/error/out_inlet_errors'
   topic_exchanger_errors:             'ln25/sensor/error/out_heatexc_errors'
+  topic_uptime:                       'ln25/sensor/uptime'
 #  topic_dht_temp:                     'ln25/sensor/temperature/out/temp'
 #  topic_dht_temp:                     'ln25/sensor/temperature/out/temp'
 #  topic_dht_humi:                     'ln25/sensor/temperature/out/humidity'
