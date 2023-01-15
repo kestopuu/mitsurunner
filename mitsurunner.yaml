@@ -107,6 +107,9 @@ globals:
   - id: G_TOPIC_DELTA_THRESHOLD
     type: const char*
     initial_value: $topic_delta_threshold
+  - id: G_TOPIC_DELTA_INTEGRAL
+    type: const char*
+    initial_value: $topic_delta_integral
 
 
 # Temperature sensor (Dallas DS18B20) and its update/measurement interval
@@ -315,6 +318,7 @@ sensor:
     update_interval: 30s
 # This C++ code checks if all requirements are fullfilled to trigger defrosting and triggers it then.
     lambda: !lambda |-
+        static float delta_integral = 0.0;
         float temperature_delta = (id(G_outdoor_temp_filtered) - id(heat_exchanger_temp).state);
         float delta_to_defrost = TEMPERATURE_DELTA_TO_DEFROST; 
 
@@ -378,10 +382,20 @@ sensor:
 
             case ST_TEMP_EXCEEDED:
                 // If the time threshold is exceeded, start defrosting
-                if (id(G_state_time_passed) || id(G_max_heating_time_passed)) {
+                delta_integral += ((temperature_delta - delta_to_defrost) * 30);
+                id(mqtt_client).publish(id(G_TOPIC_DELTA_INTEGRAL), to_string(delta_integral));
+                if (delta_integral > DELTA_INTEGRAL_THRESHOLD) {
+                    id(mqtt_client).publish(id(G_TOPIC_STATE), "5");
+                    delta_integral = 0.0;
+                    id(enter_StartDefrosting).execute();
+                }
+                else if (id(G_state_time_passed) || id(G_max_heating_time_passed)) {
+                    id(mqtt_client).publish(id(G_TOPIC_STATE), "3");
+                    delta_integral = 0.0;
                     id(enter_StartDefrosting).execute();
                 }
                 else if (temperature_delta < delta_to_defrost) {
+                    delta_integral = 0.0;
                     id(enter_Idle).execute();
                 }
                 break;
@@ -466,11 +480,13 @@ script:
     - lambda: !lambda |-
         id(start_state_timer).stop();
         id(G_previous_state) = id(G_state); 
-        
+
         id(G_timer_action) = to_string(TMR_NOT_PASSED);
         id(report_timer_status).execute();  
-        
+
         id(G_state) = ST_IDLE;
+        id(mqtt_client).publish(id(G_TOPIC_DELTA_INTEGRAL), "0.0");
+
 
 ########## ST_TEMP_EXCEEDED ###########
   - id: enter_TempExceeded
@@ -492,6 +508,7 @@ script:
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_START_DEFROSTING;
         id(G_state_timer) = DEFROST_TIMEOUT * 60000;
+        id(mqtt_client).publish(id(G_TOPIC_DELTA_INTEGRAL), "0.0");
     - script.execute: start_state_timer
 
 ######## ST_DEFROSTING_STARTED ########
