@@ -41,6 +41,9 @@ const float POWER_HIGH_THRESHOLD_A = 900;
 const float POWER_HIGH_THRESHOLD_B = 1400;
 const float AC_VOLTAGE = 230;
 
+const float POWER_LIMIT_DEFROST_STATE_LOW = 130;
+const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
+
 /* When temperature delta has been over the threshold 
  * (TEMPERATURE_DELTA_TO_DEFROST) this long, defrosting is started. */
 #define TEMPERATURE_DELTA_EXCESS_TIME   10   /* minutes */

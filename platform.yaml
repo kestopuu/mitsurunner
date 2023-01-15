@@ -72,6 +72,8 @@ substitutions:
   topic_current_filtered:             '"ln25/sensor/current_filtered"'
   topic_delta_threshold:              '"ln25/sensor/delta_threshold"'
   topic_delta_integral:               '"ln25/sensor/delta_integral"'
+  topic_defrost_state:                '"ln25/sensor/state/defrost_state"'
+  topic_defrost_duration:             '"ln25/sensor/defrost_duration"'
 
 
   dallas_pin:                         'D7'

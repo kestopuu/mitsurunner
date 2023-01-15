@@ -71,6 +71,9 @@ globals:
   - id: G_current_filtered
     type: float
     initial_value: '0.0'
+  - id: G_defrost_state #variable containing state machine state
+    type: int
+    initial_value: 'DF_HEATING'
 
 
 # global constants
@@ -110,6 +113,12 @@ globals:
   - id: G_TOPIC_DELTA_INTEGRAL
     type: const char*
     initial_value: $topic_delta_integral
+  - id: G_TOPIC_DEFROST_STATE
+    type: const char*
+    initial_value: $topic_defrost_state
+  - id: G_TOPIC_DEFROST_DURATION
+    type: const char*
+    initial_value: $topic_defrost_duration
 
 
 # Temperature sensor (Dallas DS18B20) and its update/measurement interval
@@ -242,7 +251,7 @@ sensor:
     sensor: adc_sensor
     name: "Measured Current"
     state_topic: $topic_current
-    update_interval: 10s
+    update_interval: 5s
     filters:
       #For 82R resistor
       - calibrate_linear:
@@ -258,6 +267,8 @@ sensor:
         lambda: !lambda |-
             static const float lambda = 0.1;
             static bool first_time = 1;
+            static float defrost_duration = 0.0;
+            float power = x * AC_VOLTAGE;
             if(first_time) {
                 if (!isnan(x)) {
                   id(G_current_filtered) = x;
@@ -266,7 +277,41 @@ sensor:
             } 
             else if (!isnan(x)) {
                 id(G_current_filtered) = id(G_current_filtered) * (1.0 - lambda) + x * lambda;
+
+                // Defrost monitoring state machine */
+                switch (id(G_defrost_state)) {
+                    case DF_HEATING:
+                        if ((id(G_state) == ST_START_DEFROSTING) && (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
+                            id(G_defrost_state) = DF_PRE_DEFROST;
+                            defrost_duration = 0.0;
+                        }
+                        break;
+                    case DF_PRE_DEFROST:
+                        if ((id(G_state) == ST_START_DEFROSTING) && (power > POWER_LIMIT_DEFROST_STATE_HIGH)) {
+                            id(G_defrost_state) = DF_DEFROST;
+                            defrost_duration = 0.0;
+                        }
+                        break;
+                    case DF_DEFROST:
+                      defrost_duration += 5; /* Same value as interval */
+                      if ((id(G_state) == ST_DEFROSTING_STARTED) && (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
+                            id(G_defrost_state) = DF_POST_DEFROST;
+                        }
+                        break;
+                    case DF_POST_DEFROST:
+                      defrost_duration += 5; /* Same value as interval */
+                      if ((id(G_state) == ST_DEFROSTING_STARTED) && (power > POWER_LIMIT_DEFROST_STATE_HIGH)) {
+                            id(G_defrost_state) = DF_HEATING;
+                        }
+                        break;
+                }
             }
+            id(mqtt_client).publish(id(G_TOPIC_DEFROST_STATE), to_string(id(G_defrost_state)));
+
+            if((id(G_state) == ST_START_DEFROSTING) || (id(G_state) == ST_DEFROSTING_STARTED)) {
+                id(mqtt_client).publish(id(G_TOPIC_DEFROST_DURATION), to_string(defrost_duration));
+            }
+
   - platform: adc
     pin: A0
     id: adc_sensor
@@ -319,6 +364,7 @@ sensor:
 # This C++ code checks if all requirements are fullfilled to trigger defrosting and triggers it then.
     lambda: !lambda |-
         static float delta_integral = 0.0;
+        static float temperature_delta_last = 0.0;
         float temperature_delta = (id(G_outdoor_temp_filtered) - id(heat_exchanger_temp).state);
         float delta_to_defrost = TEMPERATURE_DELTA_TO_DEFROST; 
 
@@ -381,16 +427,20 @@ sensor:
                 break;
 
             case ST_TEMP_EXCEEDED:
-                // If the time threshold is exceeded, start defrosting
-                delta_integral += ((temperature_delta - delta_to_defrost) * 30);
+                // Integrate only if temperature delta is rising
+                if (temperature_delta > temperature_delta_last) {
+                    delta_integral += ((temperature_delta - delta_to_defrost) * 30);
+                }
                 id(mqtt_client).publish(id(G_TOPIC_DELTA_INTEGRAL), to_string(delta_integral));
+
                 if (delta_integral > DELTA_INTEGRAL_THRESHOLD) {
-                    id(mqtt_client).publish(id(G_TOPIC_STATE), "5");
+                    id(mqtt_client).publish(id(G_TOPIC_STATE), "5"); // For debugging, TODO REMOVE!
                     delta_integral = 0.0;
                     id(enter_StartDefrosting).execute();
                 }
+                // If the time threshold is exceeded, start defrosting
                 else if (id(G_state_time_passed) || id(G_max_heating_time_passed)) {
-                    id(mqtt_client).publish(id(G_TOPIC_STATE), "3");
+                    id(mqtt_client).publish(id(G_TOPIC_STATE), "4"); // For debugging, TODO REMOVE!
                     delta_integral = 0.0;
                     id(enter_StartDefrosting).execute();
                 }
@@ -435,6 +485,7 @@ sensor:
                 id(enter_Idle).execute();
                 break;
         }
+        temperature_delta_last = temperature_delta;
         return temperature_delta;
 
 script:
