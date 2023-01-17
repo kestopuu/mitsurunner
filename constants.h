@@ -27,6 +27,9 @@
 /* Temperature threshold that has to be exceed long enough to start defrosting. */
 const float TEMPERATURE_DELTA_TO_DEFROST = 4.0;
 
+/* TODO explanation */
+const float DELTA_INTEGRAL_THRESHOLD = 200.0;
+
 const float OUTDOOR_TEMPERATURE_TO_ENTER_OFF_STATE = 5.0;
 const float OUTDOOR_TEMPERATURE_TO_EXIT_OFF_STATE = 4.0;
 
@@ -34,9 +37,12 @@ const float OUTDOOR_TEMPERATURE_TO_EXIT_OFF_STATE = 4.0;
  * This is checked on Reset, Idle and Off states only, not during defrosting */
 const float HEAT_EXCHANGER_MAX_TEMPERATURE = 10.0;
 
-const float POWER_HIGH_THRESHOLD_A = 900;
-const float POWER_HIGH_THRESHOLD_B = 1400;
+const float POWER_HIGH_THRESHOLD_A = 500;
+const float POWER_HIGH_THRESHOLD_B = 1000;
 const float AC_VOLTAGE = 230;
+
+const float POWER_LIMIT_DEFROST_STATE_LOW = 130;
+const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
 
 /* When temperature delta has been over the threshold 
  * (TEMPERATURE_DELTA_TO_DEFROST) this long, defrosting is started. */

@@ -42,4 +42,13 @@ enum Timer_Status
 	TMR_PASSED = 2,
 };
 
+enum Defrost_state
+{
+	DF_HEATING = 0,
+	DF_PRE_DEFROST = 1,
+	DF_DEFROST = 2,
+	DF_POST_DEFROST = 3,
+};
+
+
 #endif /* #define __STATE_H__ */

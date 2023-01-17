@@ -35,8 +35,8 @@ substitutions:
 #  dallas_address_test2:               '0xE33C01D0753C9028'
 
   dallas_address_outdoor_temp:        '0x253C01D075425928'
-  dallas_address_heat_exchanger_temp: '0xE33C01D0753C9028'
-  dallas_address_test:                '0x8F3C01D07558F828'
+  dallas_address_heat_exchanger_temp: '0x8F3C01D07558F828'
+  dallas_address_test:                '0xE33C01D0753C9028'
   dallas_address_test2:               '0xCC02189245841C28'
 
 # 1 '0x8F3C01D07558F828' Alaputki (pysty)
@@ -54,6 +54,7 @@ substitutions:
   topic_rssi:                         'ln25/sensor/wifi/rssi'
   topic_outdoor_errors:               'ln25/sensor/error/out_inlet_errors'
   topic_exchanger_errors:             'ln25/sensor/error/out_heatexc_errors'
+  topic_uptime:                       'ln25/sensor/uptime'
 #  topic_dht_temp:                     'ln25/sensor/temperature/out/temp'
 #  topic_dht_temp:                     'ln25/sensor/temperature/out/temp'
 #  topic_dht_humi:                     'ln25/sensor/temperature/out/humidity'
@@ -70,6 +71,9 @@ substitutions:
   topic_error:                        '"ln25/sensor/state/error"'
   topic_current_filtered:             '"ln25/sensor/current_filtered"'
   topic_delta_threshold:              '"ln25/sensor/delta_threshold"'
+  topic_delta_integral:               '"ln25/sensor/delta_integral"'
+  topic_defrost_state:                '"ln25/sensor/state/defrost_state"'
+  topic_defrost_duration:             '"ln25/sensor/defrost_duration"'
 
 
   dallas_pin:                         'D7'
