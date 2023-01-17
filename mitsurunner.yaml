@@ -71,7 +71,7 @@ globals:
   - id: G_current_filtered
     type: float
     initial_value: '0.0'
-  - id: G_defrost_state #variable containing state machine state
+  - id: G_defrost_state #defrosting state machine state
     type: int
     initial_value: 'DF_HEATING'
 
