@@ -367,11 +367,13 @@ sensor:
         static float temperature_delta_last = 0.0;
         float temperature_delta = (id(G_outdoor_temp_filtered) - id(heat_exchanger_temp).state);
         float delta_to_defrost = TEMPERATURE_DELTA_TO_DEFROST; 
+        float power = id(G_current_filtered) * AC_VOLTAGE;
 
-        if (id(G_current_filtered) * AC_VOLTAGE >= POWER_HIGH_THRESHOLD_B) {
-            delta_to_defrost += 2;
-        } else if (id(G_current_filtered) * AC_VOLTAGE >= POWER_HIGH_THRESHOLD_A) {
-            delta_to_defrost += 1;  
+        if (power > POWER_MIN) {
+            delta_to_defrost += (power - POWER_MIN) / POWER_DELTA_FACTOR;
+            if (delta_to_defrost > TEMPERATURE_DELTA_MAX) {
+                delta_to_defrost = TEMPERATURE_DELTA_MAX;
+            }
         }
 
         id(mqtt_client).publish(id(G_TOPIC_STATE), to_string(id(G_state)));
