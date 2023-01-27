@@ -48,6 +48,7 @@ enum Defrost_state
 	DF_PRE_DEFROST = 1,
 	DF_DEFROST = 2,
 	DF_POST_DEFROST = 3,
+	DF_INDOOR_FAN_OFF = 4,
 };
 
 

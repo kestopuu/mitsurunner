@@ -268,6 +268,7 @@ sensor:
             static const float lambda = 0.1;
             static bool first_time = 1;
             static float defrost_duration = 0.0;
+            static int fan_off_time = 0.0;
             float power = x * AC_VOLTAGE;
             if(first_time) {
                 if (!isnan(x)) {
@@ -293,18 +294,29 @@ sensor:
                         }
                         break;
                     case DF_DEFROST:
-                      defrost_duration += 5; /* Same value as interval */
-                      if ((id(G_state) == ST_DEFROSTING_STARTED) && (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
+                        defrost_duration += 5.0; /* Same value as interval */
+                        if ((id(G_state) == ST_DEFROSTING_STARTED) && (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
                             id(G_defrost_state) = DF_POST_DEFROST;
                         }
-                        break;
-                    case DF_POST_DEFROST:
-                      defrost_duration += 5; /* Same value as interval */
-                      if ((id(G_state) == ST_DEFROSTING_STARTED) && (power > POWER_LIMIT_DEFROST_STATE_HIGH)) {
+                      else if ((defrost_duration > 659)) {
                             id(G_defrost_state) = DF_HEATING;
                         }
                         break;
-                }
+                    case DF_POST_DEFROST:
+                        defrost_duration += 5.0; /* Same value as interval */
+                        if (((id(G_state) == ST_DEFROSTING_STARTED) && (power > POWER_LIMIT_DEFROST_STATE_HIGH)) ||
+                          (defrost_duration > 659)) {
+                            id(G_defrost_state) = DF_INDOOR_FAN_OFF;
+                        }
+                        break;
+                    case DF_INDOOR_FAN_OFF:
+                        fan_off_time +=5;
+                        if (fan_off_time >= 180) {
+                            id(G_defrost_state) = DF_HEATING;
+                            fan_off_time = 0;
+                        }
+                        break;
+                  }
             }
             id(mqtt_client).publish(id(G_TOPIC_DEFROST_STATE), to_string(id(G_defrost_state)));
 
