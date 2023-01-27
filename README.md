@@ -1,6 +1,6 @@
 # MitsuRunner - puu's setup
 
-This is my personal setup of the MitsuRunner software that is originally located in https://github.com/VeliML/MitsuRunner.
+This is my personal setup of the MitsuRunner software that is originally located in https://github.com/VeliML/MitsuRunner. I you want to use MitsuRunner, please clone the original one and use my setup as a reference.
 
 I have a first generation MSZ-LN25 heat pump that has serious "hullunkierto" (frequent defrosting) problem. Before installing Mitsurunner hack, it defrosted practically whole winter every 40-50 minutes. Now with Mitsurunner heat production in cold winter days is much better thanks to reasonable defrost frequency.
 
