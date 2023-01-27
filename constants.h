@@ -25,7 +25,8 @@
 #define __CONSTANTS_H__
 
 /* Temperature threshold that has to be exceed long enough to start defrosting. */
-const float TEMPERATURE_DELTA_TO_DEFROST = 4.0;
+const float TEMPERATURE_DELTA_TO_DEFROST = 4.0; /* Delta threshold at the minimum or smaller power */
+const float TEMPERATURE_DELTA_MAX = 7.0;        /* Absolute maximum delta threshold */
 
 /* TODO explanation */
 const float DELTA_INTEGRAL_THRESHOLD = 200.0;
@@ -33,24 +34,25 @@ const float DELTA_INTEGRAL_THRESHOLD = 200.0;
 const float OUTDOOR_TEMPERATURE_TO_ENTER_OFF_STATE = 5.0;
 const float OUTDOOR_TEMPERATURE_TO_EXIT_OFF_STATE = 4.0;
 
-/* Maximum heat exchanger temperature value to have defrost hacking on 
+/* Maximum heat exchanger temperature value to have defrost hacking on
  * This is checked on Reset, Idle and Off states only, not during defrosting */
 const float HEAT_EXCHANGER_MAX_TEMPERATURE = 10.0;
 
-const float POWER_HIGH_THRESHOLD_A = 500;
-const float POWER_HIGH_THRESHOLD_B = 1000;
-const float AC_VOLTAGE = 230;
+const float AC_VOLTAGE = 230.0; /* Nominal effective AC voltage */
+const float POWER_MIN = 300.0; /* At this temperature, delta threshold is at its minimum value */
+const float POWER_DELTA_FACTOR = 500.0; /* Over minimum power, 1/POWER_DELTA_FACTOR is adeed to delt threshold */
 
+/* Power values for defrost start/stop detection */
 const float POWER_LIMIT_DEFROST_STATE_LOW = 130;
 const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
 
-/* When temperature delta has been over the threshold 
+/* When temperature delta has been over the threshold
  * (TEMPERATURE_DELTA_TO_DEFROST) this long, defrosting is started. */
 #define TEMPERATURE_DELTA_EXCESS_TIME   10   /* minutes */
 
-/* When this time has been passed since last defrosting, 
+/* When this time has been passed since last defrosting,
  * forced defrosting will be started. */
-#define MAX_HEATING_TIME                360 /* minutes */
+#define MAX_HEATING_TIME                240 /* minutes */
 
 /* The minimum time between defrosting operations. */
 #define MIN_HEATING_TIME                40  /* minutes */
@@ -62,7 +64,7 @@ const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
    state will be set back to IDLE instead of DEFROSTING STARTED */
 #define DEFROST_TIMEOUT                 10  /* minutes */
 
-/* Delay at the reset before allowing state machine to step to next states 
+/* Delay at the reset before allowing state machine to step to next states
  * Gives time for the sensors to be read*/
 #define RESET_SENSOR_DELAY              25  /* seconds */
  
