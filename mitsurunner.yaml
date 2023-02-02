@@ -184,11 +184,14 @@ sensor:
                 if ((id(outdoor_temp_errors) += 1) == 1000) id(outdoor_temp_errors) = 10;
             }
             // Valid Dallas value received, do not use filter until first value received
-            else if(first_time) {
+            else if (first_time) {
                 id(G_outdoor_temp_filtered) = x;
                 first_time = false;
             }
             else {
+                if ( x > id(G_outdoor_temp_filtered) + 0.5 ) {
+                    x = id(G_outdoor_temp_filtered) + 0.5;
+                }
                 id(G_outdoor_temp_filtered) = id(G_outdoor_temp_filtered) * (1.0 - alpha) + x * alpha;
             }
 
