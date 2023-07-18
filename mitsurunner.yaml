@@ -168,10 +168,11 @@ sensor:
     state_topic: $topic_outdoor
     filters:
       - filter_out: nan
-      - sliding_window_moving_average:
-          window_size: 360  #30min
-          send_every: 6     #30s
-          send_first_at: 2  #10s
+      - filter_out: 85.0
+      - exponential_moving_average:
+          alpha: 0.01
+          send_every: 6    #30s
+          send_first_at: 2 #10s
     on_raw_value:
       then:
         lambda: !lambda |-
@@ -298,14 +299,14 @@ sensor:
                         if ((id(G_state) == ST_DEFROSTING_STARTED) && (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
                             id(G_defrost_state) = DF_POST_DEFROST;
                         }
-                      else if ((defrost_duration > 659)) {
+                      else if ((defrost_duration > 659.9)) {
                             id(G_defrost_state) = DF_HEATING;
                         }
                         break;
                     case DF_POST_DEFROST:
                         defrost_duration += 5.0; /* Same value as interval */
                         if (((id(G_state) == ST_DEFROSTING_STARTED) && (power > POWER_LIMIT_DEFROST_STATE_HIGH)) ||
-                          (defrost_duration > 659)) {
+                          (defrost_duration > 659.9)) {
                             id(G_defrost_state) = DF_INDOOR_FAN_OFF;
                         }
                         break;

@@ -25,7 +25,7 @@
 #define __CONSTANTS_H__
 
 /* Temperature threshold that has to be exceed long enough to start defrosting. */
-const float TEMPERATURE_DELTA_TO_DEFROST = 4.0; /* Delta threshold at the minimum or smaller power */
+const float TEMPERATURE_DELTA_TO_DEFROST = 3.0; /* Delta threshold at the minimum or smaller power */
 const float TEMPERATURE_DELTA_MAX = 7.0;        /* Absolute maximum delta threshold */
 
 /* TODO explanation */
@@ -36,7 +36,7 @@ const float OUTDOOR_TEMPERATURE_TO_EXIT_OFF_STATE = 4.0;
 
 /* Maximum heat exchanger temperature value to have defrost hacking on
  * This is checked on Reset, Idle and Off states only, not during defrosting */
-const float HEAT_EXCHANGER_MAX_TEMPERATURE = 10.0;
+const float HEAT_EXCHANGER_MAX_TEMPERATURE = 7.0;
 
 const float AC_VOLTAGE = 230.0; /* Nominal effective AC voltage */
 const float POWER_MIN = 300.0; /* At this temperature, delta threshold is at its minimum value */
@@ -62,7 +62,7 @@ const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
 
 /* If defrosting is not started during this time after switching the relay off,
    state will be set back to IDLE instead of DEFROSTING STARTED */
-#define DEFROST_TIMEOUT                 10  /* minutes */
+#define DEFROST_TIMEOUT                 15  /* minutes */
 
 /* Delay at the reset before allowing state machine to step to next states
  * Gives time for the sensors to be read*/
