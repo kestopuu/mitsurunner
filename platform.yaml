@@ -35,10 +35,11 @@ substitutions:
 #  dallas_address_test2:               '0xE33C01D0753C9028'
 
   dallas_address_outdoor_temp:        '0x253C01D075425928'
-  dallas_address_heat_exchanger_temp: '0xbc1f99591f64ff28' # uppermost pipe
-  dallas_address_test:                '0xE33C01D0753C9028'
-  dallas_address_test2:               '0x8F3C01D07558F828' # upper pipe
-
+  #dallas_address_heat_exchanger_temp: '0xbc1f99591f64ff28' # uppermost pipe
+  dallas_address_heat_exchanger_temp: '0x576bf7571f64ff28' # THE pipe (between 4-way valve and heat exchanger)
+  dallas_address_test:                '0xE33C01D0753C9028' # low pope
+  dallas_address_test2:               '0x8F3C01D07558F828' # middle pipe
+  dallas_address_test3:               '0xbc1f99591f64ff28' # high pipe
 #  dallas_address_test2:               '0xCC02189245841C28' # spare, not connected currently (middle pipe)
 
 # 1 '0x8F3C01D07558F828' Alin putki (pysty)
@@ -51,7 +52,8 @@ substitutions:
   topic_heatexchanger:                'ln25/sensor/temperature/out/heatexc'
   topic_outdoor:                      'ln25/sensor/temperature/out/intake_avg'
   topic_test:                         'ln25/sensor/temperature/out/heatexc_low'
-  topic_test2:                        'ln25/sensor/temperature/out/heatexc_high'
+  topic_test2:                        'ln25/sensor/temperature/out/heatexc_middle'
+  topic_test3:                        'ln25/sensor/temperature/out/heatexc_high'
   topic_delta:                        'ln25/sensor/temperature/out/delta'
   topic_current:                      'ln25/sensor/current'
   topic_rssi:                         'ln25/sensor/wifi/rssi'

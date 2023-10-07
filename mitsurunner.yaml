@@ -217,6 +217,17 @@ sensor:
           alpha: 0.05
           send_every: 6
 
+  - platform: dallas
+    address: $dallas_address_test3
+    name: "test_temperature3"
+    id: test_temperature3
+    accuracy_decimals: 1
+    state_topic: $topic_test3
+    filters:
+      - filter_out: nan
+      - exponential_moving_average:
+          alpha: 0.05
+          send_every: 6
 
  # RSSI monitoring, reports the WiFi signal strength in dB
   - platform: wifi_signal
