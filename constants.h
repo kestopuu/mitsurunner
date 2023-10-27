@@ -38,6 +38,10 @@ const float OUTDOOR_TEMPERATURE_TO_EXIT_OFF_STATE = 4.0;
  * This is checked on Reset, Idle and Off states only, not during defrosting */
 const float HEAT_EXCHANGER_MAX_TEMPERATURE = 7.0;
 
+/* Temperature delta value to account defrosting as started.
+ * Not suggested to set this below -4.0 because it may cause the software to miss defrost events. */
+const float TEMPERATURE_DELTA_DEFROSTING_STARTED = -3.0;
+
 const float AC_VOLTAGE = 230.0; /* Nominal effective AC voltage */
 const float POWER_MIN = 300.0; /* At this temperature, delta threshold is at its minimum value */
 const float POWER_DELTA_FACTOR = 500.0; /* Over minimum power, 1/POWER_DELTA_FACTOR is adeed to delt threshold */
