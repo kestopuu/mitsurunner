@@ -36,7 +36,7 @@ const float OUTDOOR_TEMPERATURE_TO_EXIT_OFF_STATE = 4.0;
 
 /* Maximum heat exchanger temperature value to have defrost hacking on
  * This is checked on Reset, Idle and Off states only, not during defrosting */
-const float HEAT_EXCHANGER_MAX_TEMPERATURE = 7.0;
+const float HEAT_EXCHANGER_MAX_TEMPERATURE = 30.0;
 
 /* Temperature delta value to account defrosting as started.
  * Not suggested to set this below -4.0 because it may cause the software to miss defrost events. */
