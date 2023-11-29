@@ -25,8 +25,8 @@
 #define __CONSTANTS_H__
 
 /* Temperature threshold that has to be exceed long enough to start defrosting. */
-const float TEMPERATURE_DELTA_TO_DEFROST = 3.0; /* Delta threshold at the minimum or smaller power */
-const float TEMPERATURE_DELTA_MAX = 7.0;        /* Absolute maximum delta threshold */
+const float TEMPERATURE_DELTA_TO_DEFROST = 2.0; /* Delta threshold at the minimum or smaller power */
+const float TEMPERATURE_DELTA_MAX = 6.0;        /* Absolute maximum delta threshold */
 
 /* TODO explanation */
 const float DELTA_INTEGRAL_THRESHOLD = 200.0;
