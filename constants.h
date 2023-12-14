@@ -62,7 +62,7 @@ const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
 #define MIN_HEATING_TIME                40  /* minutes */
 
 /* The time that the defrost hack relays is off after defrosting is started. */
-#define RELAY_OFF_TIME                  30  /* minutes */
+#define RELAY_OFF_TIME                  20  /* minutes */
 
 /* If defrosting is not started during this time after switching the relay off,
    state will be set back to IDLE instead of DEFROSTING STARTED */
