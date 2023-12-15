@@ -145,7 +145,14 @@ switch:
     lambda: "return id(G_long_defrosting);"
     turn_on_action:
       then:
-          lambda: !lambda "id(G_long_defrosting) = true;"
+        lambda: !lambda |-
+          switch(id(G_state)) {
+              case ST_HEATING_MIN_TIME:
+              case ST_IDLE:
+              case ST_TEMP_EXCEEDED:
+                  id(G_long_defrosting) = true;
+                  break;
+          }
     turn_off_action:
       then:
           lambda: !lambda "id(G_long_defrosting) = false;"
@@ -323,7 +330,8 @@ sensor:
                         break;
                     case DF_DEFROST:
                         defrost_duration += 5.0; /* Same value as interval */
-                        if ((id(G_state) == ST_DEFROSTING_STARTED) && (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
+                        if (((id(G_state) == ST_DEFROSTING_STARTED) || (id(G_state) == ST_LONG_DEFROSTING_STARTED)) &&
+                            (power < POWER_LIMIT_DEFROST_STATE_LOW)) {
                             id(G_defrost_state) = DF_POST_DEFROST;
                         }
                       else if ((defrost_duration > 659.9)) {
@@ -332,7 +340,8 @@ sensor:
                         break;
                     case DF_POST_DEFROST:
                         defrost_duration += 5.0; /* Same value as interval */
-                        if (((id(G_state) == ST_DEFROSTING_STARTED) && (power > POWER_LIMIT_DEFROST_STATE_HIGH)) ||
+                        if ((((id(G_state) == ST_DEFROSTING_STARTED) || (id(G_state) == ST_LONG_DEFROSTING_STARTED)) &&
+                            (power > POWER_LIMIT_DEFROST_STATE_HIGH)) ||
                           (defrost_duration > 659.9)) {
                             id(G_defrost_state) = DF_INDOOR_FAN_OFF;
                         }
@@ -583,7 +592,6 @@ script:
     mode: single
     then:
     - switch.turn_on: gpio_relay
-    - switch.turn_off: long_defrosting
     - lambda: !lambda |-
         id(start_state_timer).stop();
         id(G_previous_state) = id(G_state); 
@@ -623,6 +631,7 @@ script:
     mode: single
     then:
     - switch.turn_off: gpio_relay
+    - switch.turn_off: long_defrosting
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_DEFROSTING_STARTED;
