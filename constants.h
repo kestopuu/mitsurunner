@@ -25,7 +25,7 @@
 #define __CONSTANTS_H__
 
 /* Temperature threshold that has to be exceed long enough to start defrosting. */
-const float TEMPERATURE_DELTA_TO_DEFROST = 2.0; /* Delta threshold at the minimum or smaller power */
+const float TEMPERATURE_DELTA_TO_DEFROST = 1.0; /* Delta threshold at the minimum or smaller power */
 const float TEMPERATURE_DELTA_MAX = 6.0;        /* Absolute maximum delta threshold */
 
 /* TODO explanation */
@@ -40,7 +40,7 @@ const float HEAT_EXCHANGER_MAX_TEMPERATURE = 30.0;
 
 /* Temperature delta value to account defrosting as started.
  * Not suggested to set this below -4.0 because it may cause the software to miss defrost events. */
-const float TEMPERATURE_DELTA_DEFROSTING_STARTED = -3.0;
+const float TEMPERATURE_DELTA_DEFROSTING_STARTED = -4.0;
 
 const float AC_VOLTAGE = 230.0; /* Nominal effective AC voltage */
 const float POWER_MIN = 300.0; /* At this temperature, delta threshold is at its minimum value */
