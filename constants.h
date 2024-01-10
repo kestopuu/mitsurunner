@@ -25,7 +25,7 @@
 #define __CONSTANTS_H__
 
 /* Temperature threshold that has to be exceed long enough to start defrosting. */
-const float TEMPERATURE_DELTA_TO_DEFROST = 1.0; /* Delta threshold at the minimum or smaller power */
+const float TEMPERATURE_DELTA_TO_DEFROST = 0.5; /* Delta threshold at the minimum or smaller power */
 const float TEMPERATURE_DELTA_MAX = 6.0;        /* Absolute maximum delta threshold */
 
 /* TODO explanation */
@@ -56,7 +56,7 @@ const float POWER_LIMIT_DEFROST_STATE_HIGH = 150;
 
 /* When this time has been passed since last defrosting,
  * forced defrosting will be started. */
-#define MAX_HEATING_TIME                240 /* minutes */
+#define MAX_HEATING_TIME                360 /* minutes */
 
 /* The minimum time between defrosting operations. */
 #define MIN_HEATING_TIME                40  /* minutes */

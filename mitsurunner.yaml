@@ -77,6 +77,9 @@ globals:
   - id: G_long_defrosting
     type: bool
     initial_value: 'false'
+  - id: G_manual_defrost
+    type: bool
+    initial_value: 'false'
 
 
 # global constants
@@ -156,6 +159,23 @@ switch:
     turn_off_action:
       then:
           lambda: !lambda "id(G_long_defrosting) = false;"
+
+  - platform: template
+    name: "defrost force start"
+    id: manual_defrost
+    lambda: "return id(G_manual_defrost);"
+    turn_on_action:
+      then:
+        lambda: !lambda |-
+          switch(id(G_state)) {
+              case ST_IDLE:
+              case ST_TEMP_EXCEEDED:
+                  id(G_manual_defrost) = true;
+                  break;
+          }
+    turn_off_action:
+      then:
+          lambda: !lambda "id(G_manual_defrost) = false;"
 
 # Temperature sensor (Dallas DS18B20) details. 
 # You need to check temperature sensors IDs by starting this software and checking IDs from log printing to terminal. 
@@ -459,7 +479,7 @@ sensor:
                     id(enter_Off).execute();
                 }
                 // If maximum heating time exceeded, start defrosting immediately
-                else if (id(G_max_heating_time_passed)) {
+                else if (id(G_max_heating_time_passed) || id(G_manual_defrost)) {
                     id(enter_StartDefrosting).execute();
                 }
                 // Wait for the temperature delta threshold to be exceeded.
@@ -484,7 +504,7 @@ sensor:
                 }
                 id(mqtt_client).publish(id(G_TOPIC_DELTA_INTEGRAL), to_string(delta_integral));
 
-                if (delta_integral > DELTA_INTEGRAL_THRESHOLD) {
+                if (delta_integral > DELTA_INTEGRAL_THRESHOLD || id(G_manual_defrost)) {
                     id(mqtt_client).publish(id(G_TOPIC_STATE), "5"); // For debugging, TODO REMOVE!
                     delta_integral = 0.0;
                     id(enter_StartDefrosting).execute();
@@ -569,6 +589,7 @@ script:
     then:
     - switch.turn_off: gpio_relay
     - switch.turn_off: long_defrosting
+    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_RESET;
@@ -581,6 +602,7 @@ script:
     then:
     - switch.turn_off: gpio_relay
     - switch.turn_off: long_defrosting
+    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(start_state_timer).stop();
         id(schedule_forced_defrosting).stop();
@@ -619,6 +641,7 @@ script:
     mode: single
     then:
     - switch.turn_off: gpio_relay
+    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_START_DEFROSTING;
@@ -632,6 +655,7 @@ script:
     then:
     - switch.turn_off: gpio_relay
     - switch.turn_off: long_defrosting
+    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_DEFROSTING_STARTED;
@@ -645,6 +669,7 @@ script:
     then:
     - switch.turn_on: gpio_relay
     - switch.turn_off: long_defrosting
+    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_LONG_DEFROSTING_STARTED;
@@ -658,6 +683,7 @@ script:
     then:
     - switch.turn_on: gpio_relay
     - switch.turn_off: long_defrosting
+    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_HEATING_MIN_TIME;
