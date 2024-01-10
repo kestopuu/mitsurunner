@@ -439,7 +439,7 @@ sensor:
         float power = id(G_current_filtered) * AC_VOLTAGE;
 
         if (power > POWER_MIN) {
-            delta_to_defrost += (power - POWER_MIN) / POWER_DELTA_FACTOR;
+            delta_to_defrost += (power - POWER_MIN) / POWER_DELTA_DIVIDER;
             if (delta_to_defrost > TEMPERATURE_DELTA_MAX) {
                 delta_to_defrost = TEMPERATURE_DELTA_MAX;
             }
