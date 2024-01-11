@@ -22,6 +22,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 logger:
+    level: NONE
+    baud_rate: 0
 
 substitutions:
   platform_type:                      'esp8266'

@@ -641,7 +641,6 @@ script:
     mode: single
     then:
     - switch.turn_off: gpio_relay
-    - switch.turn_off: manual_defrost
     - lambda: !lambda |-
         id(G_previous_state) = id(G_state);
         id(G_state) = ST_START_DEFROSTING;
